@@ -9,7 +9,9 @@
     git submodule add https://github.com/Rennstall/SystemView
     ```
 
-2. initialize and start SystemView recording in `src/freertos.c`
+2. Copy compile flags into `platformio.ini` from the newewst `SWTemplate` repo.
+
+3. initialize SystemView recording in `src/freertos.c`
     ```c
     #include "SystemView/SEGGER_SYSVIEW.h"
     /* ... */
@@ -19,17 +21,54 @@
         /* ... */
         /* user task setup */
         /* ... */
-
-        SEGGER_SYSVIEW_Start();
     }
     ```
 
+4. Patch FreeRTOS files
+    > The patch is supplied by `CGEN` and should be executed with `postgen.bat`
 
-3. Add plotting variables (if desired)
+    Patched files are in 
+    * `boards/*/FreeRTOSConfig.h`
+    * `lib/FreeRTOS/task.c`
+    * `lib/FreeRTOS/include/FreeRTOS.h`
+    * `lib/FreeRTOS/include/task.h`
+    * `lib/FreeRTOS/portable/GCC/ARM_CM4F/port.c`
+    * `lib/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h`
+
+    The new files are stored in `scripts/CGEN/SystemView/`
+
+
+> [!INFO]
+> The ECU will start recording as soon as `SystemView` is attached
+
+> [!ATTENTION]
+> A debugger must be initially attached for reading timestamps.
+> A workaround is needed to unlock the debug/trace core without attached debugger
+
+
+
+4. One Shot recording is possle
+    * add this snippet around the snippet to be recorded
+
+    ```c
+    SEGGER_SYSVIEW_Start();
+    /* do stuff */
+    SEGGER_SYSVIEW_Stop();
+    ```
+
+
+5. Add plotting variables (if desired)
+
+    For whatever reason, the variable will only show up in the plot window
+    when the RegisterData is called somewhat regularly.
+
+    When calling `init` only once at startup, with subsequent `...SampleData` calls, the
+    value will show up in the console, but not in the plot window.
+   
     ```c
     #include "SystemView/SEGGER_SYSVIEW.h"
 
-    void myFunc(){
+    void init(){
 
         /* setup the signal, can be done everywhere */
         SEGGER_SYSVIEW_DATA_REGISTER vPlot;
@@ -41,11 +80,13 @@
         vPlot.RangeMin = 0;
         vPlot.sUnit = "V";
 
-        /* either start one-shot recording here
-         * or start it with freertos.c for cont. recording */
+        /* either start one-shot recording here if required */
         // SEGGER_SYSVIEW_Start();
 
         SEGGER_SYSVIEW_RegisterData(&vPlot);
+    }
+
+    void loop(){
 
         /* setup logging variables */
         uint32_t voltage = 0;
@@ -67,12 +108,3 @@
 
 
 
-4. One Shot recording is possle
-    * remove the call to `SEGGER_SYSVIEW_Start()` in `freertos.c`
-    * add this snippet around the snippet to be recorded
-
-    ```c
-    SEGGER_SYSVIEW_Start();
-    /* do stuff */
-    SEGGER_SYSVIEW_Stop();
-    ```
