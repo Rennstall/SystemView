@@ -95,7 +95,13 @@ Additional information:
  **********************************************************************
  */
 
+#if defined(STM32G4)
+#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE 2048
+#elif defined(STM32H7)
 #define SEGGER_SYSVIEW_RTT_BUFFER_SIZE 10240
+#else
+#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE 1024  // Default to smaller size
+#endif
 
 #endif  // SEGGER_SYSVIEW_CONF_H
 
