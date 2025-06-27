@@ -1,5 +1,8 @@
 # SystemView
 
+> [!NOTE]
+> This repo is a flat copy of [Segger/SystemView](https://github.com/SEGGERMicro/SystemView). All ownership and rights remain with Segger
+
 ## Usage
 
 A few API methods are exposed. These can be used to gather better insights into the ECU than traditional debugging
